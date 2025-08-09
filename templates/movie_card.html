@@ -1,7 +1,8 @@
 {{if .movies}}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
     {{range .movies}}
-    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer movie-card" 
+         onclick="window.location.href='/movie/{{.ID}}'">
         {{if .PosterPath}}
         <img src="https://image.tmdb.org/t/p/w300{{.PosterPath}}" 
              alt="{{.Title}}" 
@@ -28,10 +29,16 @@
             <p class="text-sm text-gray-700 mb-4 line-clamp-3">{{.Overview}}</p>
             {{end}}
             
-            <button onclick="openFavoriteModal({{.ID}})" 
-                    class="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition-colors">
-                ❤️ Add to Favorites
-            </button>
+            <div class="flex space-x-2">
+                <button onclick="event.stopPropagation(); window.location.href='/movie/{{.ID}}'" 
+                        class="flex-1 bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 transition-colors text-sm">
+                    📖 Details
+                </button>
+                <button onclick="event.stopPropagation(); openFavoriteModal({{.ID}})" 
+                        class="flex-1 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition-colors text-sm">
+                    ❤️ Add
+                </button>
+            </div>
         </div>
     </div>
     {{end}}

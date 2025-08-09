@@ -51,6 +51,7 @@ func SetupRoutes(r *gin.Engine) {
 		// Movie pages
 		protected.GET("/search", favoritesHandler.ShowSearch)
 		protected.GET("/favorites", favoritesHandler.ShowFavorites)
+		protected.GET("/movie/:id", tmdbHandler.GetMovieDetail)
 		protected.GET("/favorites/por-ver", func(c *gin.Context) {
 			c.Redirect(http.StatusFound, "/favorites?status=por_ver")
 		})

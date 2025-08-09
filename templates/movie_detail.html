@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.movie.Title}} - Movie Tracker</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-blue-600 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard" class="text-white text-xl font-bold">🎬 Movie Tracker</a>
+                    <a href="/search" class="text-blue-200 hover:text-white px-3 py-2 rounded">Search</a>
+                    <a href="/favorites" class="text-blue-200 hover:text-white px-3 py-2 rounded">Favorites</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-blue-200">Hello, {{.user.Username}}</span>
+                    <form method="POST" action="/logout" class="inline">
+                        <button type="submit" class="text-blue-200 hover:text-white px-3 py-2 rounded">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Back Button -->
+            <div class="mb-6">
+                <button onclick="history.back()" class="flex items-center text-blue-600 hover:text-blue-800">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Back
+                </button>
+            </div>
+
+            <!-- Movie Header -->
+            <div class="bg-white shadow rounded-lg overflow-hidden mb-6">
+                {{if .movie.BackdropPath}}
+                <div class="relative h-80 bg-cover bg-center" style="background-image: url('https://image.tmdb.org/t/p/w1280{{.movie.BackdropPath}}')">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                    <div class="absolute bottom-4 left-4 text-white">
+                        <h1 class="text-4xl font-bold mb-2">{{.movie.Title}}</h1>
+                        {{if ne .movie.Title .movie.OriginalTitle}}
+                        <p class="text-xl opacity-90">{{.movie.OriginalTitle}}</p>
+                        {{end}}
+                        {{if .movie.Tagline}}
+                        <p class="text-lg italic mt-2 opacity-80">"{{.movie.Tagline}}"</p>
+                        {{end}}
+                    </div>
+                </div>
+                {{else}}
+                <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8">
+                    <h1 class="text-4xl font-bold mb-2">{{.movie.Title}}</h1>
+                    {{if ne .movie.Title .movie.OriginalTitle}}
+                    <p class="text-xl opacity-90">{{.movie.OriginalTitle}}</p>
+                    {{end}}
+                    {{if .movie.Tagline}}
+                    <p class="text-lg italic mt-2 opacity-80">"{{.movie.Tagline}}"</p>
+                    {{end}}
+                </div>
+                {{end}}
+            </div>
+
+            <!-- Movie Content -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Poster and Action Buttons -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white shadow rounded-lg p-6 sticky top-4">
+                        {{if .movie.PosterPath}}
+                        <img src="https://image.tmdb.org/t/p/w500{{.movie.PosterPath}}" 
+                             alt="{{.movie.Title}} poster" 
+                             class="w-full rounded-lg shadow-md mb-4">
+                        {{else}}
+                        <div class="w-full h-96 bg-gray-300 rounded-lg flex items-center justify-center mb-4">
+                            <span class="text-6xl">🎬</span>
+                        </div>
+                        {{end}}
+
+                        <!-- Add to Favorites Button -->
+                        <button onclick="openFavoriteModal({{.movie.ID}})" 
+                                class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors text-lg font-medium mb-4">
+                            ❤️ Add to Favorites
+                        </button>
+
+                        <!-- Quick Stats -->
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <span class="text-yellow-400 text-xl mr-2">⭐</span>
+                                <span class="font-bold">{{printf "%.1f" .movie.VoteAverage}}/10</span>
+                                <span class="text-gray-600 ml-2">({{.movie.VoteCount}} votes)</span>
+                            </div>
+                            
+                            {{if .movie.Runtime}}
+                            <div class="flex items-center">
+                                <span class="text-gray-600 mr-2">🕐</span>
+                                <span>{{.movie.Runtime}} minutes</span>
+                            </div>
+                            {{end}}
+
+                            {{if .movie.ReleaseDate}}
+                            <div class="flex items-center">
+                                <span class="text-gray-600 mr-2">📅</span>
+                                <span>{{.movie.ReleaseDate}}</span>
+                            </div>
+                            {{end}}
+
+                            {{if .movie.Status}}
+                            <div class="flex items-center">
+                                <span class="text-gray-600 mr-2">📊</span>
+                                <span class="capitalize">{{.movie.Status}}</span>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Movie Details -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Overview -->
+                    {{if .movie.Overview}}
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h2 class="text-2xl font-bold mb-4">📖 Overview</h2>
+                        <p class="text-gray-700 leading-relaxed">{{.movie.Overview}}</p>
+                    </div>
+                    {{end}}
+
+                    <!-- Genres -->
+                    {{if .movie.Genres}}
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h2 class="text-2xl font-bold mb-4">🎭 Genres</h2>
+                        <div class="flex flex-wrap gap-2">
+                            {{range .movie.Genres}}
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                                {{.Name}}
+                            </span>
+                            {{end}}
+                        </div>
+                    </div>
+                    {{end}}
+
+                    <!-- Production Details -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h2 class="text-2xl font-bold mb-4">🏭 Production Details</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {{if .movie.Budget}}
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Budget</h3>
+                                <p class="text-gray-700">${{.formatBudget}}</p>
+                            </div>
+                            {{end}}
+
+                            {{if .movie.Revenue}}
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Revenue</h3>
+                                <p class="text-gray-700">${{.formatRevenue}}</p>
+                            </div>
+                            {{end}}
+
+                            {{if .movie.OriginalLanguage}}
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Original Language</h3>
+                                <p class="text-gray-700 uppercase">{{.movie.OriginalLanguage}}</p>
+                            </div>
+                            {{end}}
+
+                            {{if .movie.Popularity}}
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Popularity</h3>
+                                <p class="text-gray-700">{{printf "%.1f" .movie.Popularity}}</p>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Production Companies -->
+                    {{if .movie.ProductionCompanies}}
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h2 class="text-2xl font-bold mb-4">🏢 Production Companies</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {{range .movie.ProductionCompanies}}
+                            <div class="flex items-center space-x-3 p-3 border rounded-lg">
+                                {{if .LogoPath}}
+                                <img src="https://image.tmdb.org/t/p/w92{{.LogoPath}}" 
+                                     alt="{{.Name}}" 
+                                     class="h-12 w-auto object-contain">
+                                {{else}}
+                                <div class="h-12 w-12 bg-gray-200 rounded flex items-center justify-center">
+                                    <span class="text-gray-500">🏢</span>
+                                </div>
+                                {{end}}
+                                <div>
+                                    <p class="font-medium">{{.Name}}</p>
+                                    {{if .OriginCountry}}
+                                    <p class="text-sm text-gray-600">{{.OriginCountry}}</p>
+                                    {{end}}
+                                </div>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+                    {{end}}
+
+                    <!-- Additional Information -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h2 class="text-2xl font-bold mb-4">ℹ️ Additional Information</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {{if .movie.IMDBId}}
+                            <div>
+                                <h3 class="font-semibold text-gray-900">IMDB ID</h3>
+                                <a href="https://www.imdb.com/title/{{.movie.IMDBId}}" 
+                                   target="_blank" 
+                                   class="text-blue-600 hover:text-blue-800">{{.movie.IMDBId}}</a>
+                            </div>
+                            {{end}}
+
+                            {{if .movie.Homepage}}
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Official Website</h3>
+                                <a href="{{.movie.Homepage}}" 
+                                   target="_blank" 
+                                   class="text-blue-600 hover:text-blue-800 break-all">{{.movie.Homepage}}</a>
+                            </div>
+                            {{end}}
+
+                            {{if .movie.SpokenLanguages}}
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Spoken Languages</h3>
+                                <p class="text-gray-700">
+                                    {{range $index, $lang := .movie.SpokenLanguages}}
+                                        {{if $index}}, {{end}}{{$lang.EnglishName}}
+                                    {{end}}
+                                </p>
+                            </div>
+                            {{end}}
+
+                            {{if .movie.ProductionCountries}}
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Production Countries</h3>
+                                <p class="text-gray-700">
+                                    {{range $index, $country := .movie.ProductionCountries}}
+                                        {{if $index}}, {{end}}{{$country.Name}}
+                                    {{end}}
+                                </p>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add to Favorites Modal (Reusing from search page) -->
+    <div id="favorite-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold mb-4">Add to Favorites</h3>
+            <form id="favorite-form" hx-post="/api/favorites" hx-target="#alerts">
+                <input type="hidden" id="modal-tmdb-id" name="tmdb_id">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <option value="por_ver">To Watch</option>
+                        <option value="vista">Watched</option>
+                        <option value="recomendada">Recommended</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Rating (1-10)</label>
+                    <input type="number" name="rating" min="1" max="10" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                    <textarea name="notes" rows="3" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Recommended By</label>
+                    <input type="text" name="recommended_by" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeFavoriteModal()" 
+                            class="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                        Add to Favorites
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="alerts" class="fixed top-4 right-4 z-50"></div>
+
+    <script>
+    function openFavoriteModal(tmdbId) {
+        document.getElementById('modal-tmdb-id').value = tmdbId;
+        document.getElementById('favorite-modal').classList.remove('hidden');
+    }
+
+    function closeFavoriteModal() {
+        document.getElementById('favorite-modal').classList.add('hidden');
+        document.getElementById('favorite-form').reset();
+    }
+
+    // Handle form submission success
+    document.body.addEventListener('htmx:afterSwap', function(event) {
+        if (event.detail.target.id === 'alerts') {
+            closeFavoriteModal();
+        }
+    });
+    </script>
+</body>
+</html>

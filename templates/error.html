@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}} - Movie Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full bg-white shadow rounded-lg p-8 text-center">
+        <div class="text-6xl mb-4">❌</div>
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">{{.title}}</h1>
+        <p class="text-gray-600 mb-6">{{.error}}</p>
+        <button onclick="history.back()" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700">
+            Go Back
+        </button>
+    </div>
+</body>
+</html>

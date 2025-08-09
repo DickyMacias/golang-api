@@ -67,11 +67,16 @@
 
 /* Movie card hover effects */
 .movie-card {
-    transition: transform 0.2s ease-in-out;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .movie-card:hover {
     transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.movie-card:active {
+    transform: translateY(0);
 }
 
 /* Responsive grid improvements */
