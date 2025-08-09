@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorites - Movie Tracker</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-blue-600 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard" class="text-white text-xl font-bold">🎬 Movie Tracker</a>
+                    <a href="/search" class="text-blue-200 hover:text-white px-3 py-2 rounded">Search</a>
+                    <a href="/favorites" class="text-white px-3 py-2 rounded bg-blue-700">Favorites</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-blue-200">Hello, {{.user.Username}}</span>
+                    <form method="POST" action="/logout" class="inline">
+                        <button type="submit" class="text-blue-200 hover:text-white px-3 py-2 rounded">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="bg-white shadow rounded-lg p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h1 class="text-3xl font-bold text-gray-900">❤️ Your Favorites</h1>
+                    <a href="/search" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+                        + Add Movies
+                    </a>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+                    <a href="/favorites" 
+                       class="px-4 py-2 rounded-md text-sm font-medium {{if not .status}}bg-white text-gray-900 shadow{{else}}text-gray-700 hover:text-gray-900{{end}}">
+                        All ({{.stats.total}})
+                    </a>
+                    <a href="/favorites?status=por_ver" 
+                       class="px-4 py-2 rounded-md text-sm font-medium {{if eq .status "por_ver"}}bg-white text-gray-900 shadow{{else}}text-gray-700 hover:text-gray-900{{end}}">
+                        To Watch ({{.stats.por_ver}})
+                    </a>
+                    <a href="/favorites?status=vista" 
+                       class="px-4 py-2 rounded-md text-sm font-medium {{if eq .status "vista"}}bg-white text-gray-900 shadow{{else}}text-gray-700 hover:text-gray-900{{end}}">
+                        Watched ({{.stats.vista}})
+                    </a>
+                    <a href="/favorites?status=recomendada" 
+                       class="px-4 py-2 rounded-md text-sm font-medium {{if eq .status "recomendada"}}bg-white text-gray-900 shadow{{else}}text-gray-700 hover:text-gray-900{{end}}">
+                        Recommended ({{.stats.recomendada}})
+                    </a>
+                </div>
+            </div>
+
+            <div id="favorites-list">
+                {{if .favorites}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {{range .favorites}}
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                            <div class="flex">
+                                {{if .PosterPath}}
+                                <img src="https://image.tmdb.org/t/p/w200{{.PosterPath}}" 
+                                     alt="{{.Title}}" 
+                                     class="w-24 h-36 object-cover">
+                                {{else}}
+                                <div class="w-24 h-36 bg-gray-300 flex items-center justify-center">
+                                    <span class="text-4xl">🎬</span>
+                                </div>
+                                {{end}}
+                                
+                                <div class="p-4 flex-1">
+                                    <h3 class="font-bold text-lg mb-2">{{.Title}}</h3>
+                                    
+                                    <div class="mb-2">
+                                        <select hx-patch="/api/favorites/{{.ID}}/status" 
+                                                hx-trigger="change" 
+                                                hx-swap="none"
+                                                class="text-sm border border-gray-300 rounded px-2 py-1">
+                                            <option value="por_ver" {{if eq .Status "por_ver"}}selected{{end}}>📝 To Watch</option>
+                                            <option value="vista" {{if eq .Status "vista"}}selected{{end}}>✅ Watched</option>
+                                            <option value="recomendada" {{if eq .Status "recomendada"}}selected{{end}}>⭐ Recommended</option>
+                                        </select>
+                                    </div>
+
+                                    {{if .Rating}}
+                                    <div class="mb-2">
+                                        <span class="text-sm text-gray-600">Rating: {{.Rating}}/10 ⭐</span>
+                                    </div>
+                                    {{end}}
+
+                                    {{if .Notes}}
+                                    <p class="text-sm text-gray-600 mb-2">
+                                        <strong>Notes:</strong> {{.Notes}}
+                                    </p>
+                                    {{end}}
+
+                                    {{if .RecommendedBy}}
+                                    <p class="text-sm text-gray-600 mb-2">
+                                        <strong>Recommended by:</strong> {{.RecommendedBy}}
+                                    </p>
+                                    {{end}}
+
+                                    <div class="flex justify-between items-center mt-3">
+                                        <span class="text-xs text-gray-500">
+                                            Added {{.AddedAt.Format "Jan 2, 2006"}}
+                                        </span>
+                                        <button hx-delete="/api/favorites/{{.ID}}"
+                                                hx-confirm="Are you sure you want to remove this movie?"
+                                                hx-swap="none"
+                                                class="text-red-600 hover:text-red-800 text-sm">
+                                            🗑️ Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                {{else}}
+                    <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                        <div class="text-6xl mb-4">🎬</div>
+                        <h3 class="text-xl font-semibold mb-2">No movies found</h3>
+                        <p class="text-gray-600 mb-4">
+                            {{if .status}}
+                                You don't have any movies with status "{{.status}}"
+                            {{else}}
+                                You haven't added any movies to your favorites yet
+                            {{end}}
+                        </p>
+                        <a href="/search" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700">
+                            Search Movies
+                        </a>
+                    </div>
+                {{end}}
+            </div>
+        </div>
+    </main>
+
+    <div id="alerts" class="fixed top-4 right-4 z-50"></div>
+</body>
+</html>

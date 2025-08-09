@@ -1,0 +1,18 @@
+{{if .type}}
+<div class="alert {{if eq .type "success"}}bg-green-100 border-green-400 text-green-700{{else if eq .type "error"}}bg-red-100 border-red-400 text-red-700{{else}}bg-blue-100 border-blue-400 text-blue-700{{end}} px-4 py-3 rounded border mb-4"
+     hx-swap-oob="afterbegin:#alerts">
+    <div class="flex justify-between items-center">
+        <span>{{.message}}</span>
+        <button onclick="this.parentElement.parentElement.remove()" class="text-xl leading-none cursor-pointer">&times;</button>
+    </div>
+</div>
+<script>
+    // Auto-remove alert after 5 seconds
+    setTimeout(function() {
+        var alerts = document.querySelectorAll('#alerts .alert');
+        if (alerts.length > 0) {
+            alerts[0].remove();
+        }
+    }, 5000);
+</script>
+{{end}}

@@ -1,0 +1,43 @@
+{{if .movies}}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {{range .movies}}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+        {{if .PosterPath}}
+        <img src="https://image.tmdb.org/t/p/w300{{.PosterPath}}" 
+             alt="{{.Title}}" 
+             class="w-full h-72 object-cover">
+        {{else}}
+        <div class="w-full h-72 bg-gray-300 flex items-center justify-center">
+            <span class="text-6xl">🎬</span>
+        </div>
+        {{end}}
+        
+        <div class="p-4">
+            <h3 class="font-bold text-lg mb-2 line-clamp-2">{{.Title}}</h3>
+            
+            {{if .ReleaseDate}}
+            <p class="text-sm text-gray-600 mb-2">{{.ReleaseDate}}</p>
+            {{end}}
+            
+            <div class="flex items-center mb-3">
+                <span class="text-yellow-400">⭐</span>
+                <span class="text-sm text-gray-600 ml-1">{{printf "%.1f" .VoteAverage}}</span>
+            </div>
+            
+            {{if .Overview}}
+            <p class="text-sm text-gray-700 mb-4 line-clamp-3">{{.Overview}}</p>
+            {{end}}
+            
+            <button onclick="openFavoriteModal({{.ID}})" 
+                    class="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition-colors">
+                ❤️ Add to Favorites
+            </button>
+        </div>
+    </div>
+    {{end}}
+</div>
+{{else}}
+<div class="text-center py-8 text-gray-500">
+    No movies found. Try a different search term.
+</div>
+{{end}}

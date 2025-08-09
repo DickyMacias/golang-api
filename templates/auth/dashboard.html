@@ -1,0 +1,75 @@
+{{define "content"}}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome back, {{.user.Username}}! 👋</h1>
+        <p class="text-gray-600">Manage your movie collection and discover new films</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-blue-500 text-white p-6 rounded-lg">
+            <h3 class="text-lg font-semibold">📝 To Watch</h3>
+            <p class="text-3xl font-bold" id="stats-por-ver">-</p>
+            <a href="/favorites?status=por_ver" class="text-blue-200 hover:text-white">View all →</a>
+        </div>
+        <div class="bg-green-500 text-white p-6 rounded-lg">
+            <h3 class="text-lg font-semibold">✅ Watched</h3>
+            <p class="text-3xl font-bold" id="stats-vista">-</p>
+            <a href="/favorites?status=vista" class="text-green-200 hover:text-white">View all →</a>
+        </div>
+        <div class="bg-yellow-500 text-white p-6 rounded-lg">
+            <h3 class="text-lg font-semibold">⭐ Recommended</h3>
+            <p class="text-3xl font-bold" id="stats-recomendada">-</p>
+            <a href="/favorites?status=recomendada" class="text-yellow-200 hover:text-white">View all →</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">🔍 Quick Actions</h2>
+            <div class="space-y-3">
+                <a href="/search" class="block w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 text-center">
+                    Search Movies
+                </a>
+                <a href="/favorites" class="block w-full bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 text-center">
+                    View All Favorites
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">📈 Your Stats</h2>
+            <div class="space-y-2" hx-get="/api/stats" hx-trigger="load" hx-target="this">
+                <div class="flex justify-between">
+                    <span>Total Movies:</span>
+                    <span class="font-bold" id="stats-total">-</span>
+                </div>
+                <div class="text-sm text-gray-600">
+                    Keep tracking your movie journey!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 bg-white shadow rounded-lg p-6">
+        <h2 class="text-xl font-semibold mb-4">🎬 Popular Movies</h2>
+        <div id="popular-movies" hx-get="/api/movies/popular" hx-trigger="load">
+            <div class="text-center py-4">Loading popular movies...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Load stats on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/stats')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('stats-total').textContent = data.total || 0;
+                document.getElementById('stats-por-ver').textContent = data.por_ver || 0;
+                document.getElementById('stats-vista').textContent = data.vista || 0;
+                document.getElementById('stats-recomendada').textContent = data.recomendada || 0;
+            })
+            .catch(err => console.error('Error loading stats:', err));
+    });
+</script>
+{{end}}
